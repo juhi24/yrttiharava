@@ -4,7 +4,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 __metaclass__ = type
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from yrttikanta.tables import Herb, Base
 
@@ -46,5 +45,5 @@ if __name__ == '__main__':
     Session = sessionmaker(bind=engine)
     session = Session()
     d = sample_data()
-    vp = Herb(name=d['Kasvi'])
+    vp = Herb(name=d['Kasvi'], alt_names=d['Muut nimet'])
     session.add(vp)
