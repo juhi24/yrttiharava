@@ -3,37 +3,48 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 __metaclass__ = type
 
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-
-engine = create_engine('sqlite:///:memory:', echo=True)
-Base = declarative_base()
-
-
-class Herb(Base):
-    __tablename__ = 'herbs'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    
-    def __repr__(self):
-        return '<Herb {}>'.format(self.name)
+from sqlalchemy.orm import sessionmaker
+from yrttikanta.tables import Herb, Base
 
 
-class HerbName(Base):
-    """relational link between herbs and their alternative names"""
-    __tablename__ = 'herb_names'
-    
-    herb_id = Column(Integer)
-    name_id = Column(Integer)
+def sample_data():
+    return {'Englanninkieliset nimet': ['Dead nettle'],
+         'Heimo': ['Lamiaceae', 'Huulikukkaiskasvit'],
+         'Kansanperinne': False,
+         'Kasvi': 'Valkopeippi',
+         'Kauppayrtti': False,
+         'Latinankieliset nimet': ['Lamium album'],
+         'Linkkitekstit': [''],
+         'Muut nimet': ['Mukulvainen',
+          'nuplukainen',
+          'peippi',
+          'peippo',
+          'piikkiäinen',
+          'piiskoheinä',
+          'piitiäinen',
+          'pillikka',
+          'pillikäs',
+          'porrinkainen',
+          'porro',
+          'sianleuka',
+          'siannukulainen',
+          'toukoruoho',
+          'valkopeipponen',
+          'valkopillike',
+          'valkopillikäs'],
+         'Ruotsinkieliset nimet': ['Vitplister'],
+         'Saksankieliset nimet': ['Taubnessel'],
+         'Vaikutusalueet rohtona': ['kuukautisvaivat', 'valkovuoto'],
+         'Viljelytekniikka': False}
 
 
-class AltName(Base):
-    """Alternative herb names"""
-    __tablename__ = 'alt_names'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-
-
-
+if __name__ == '__main__':
+    engine = create_engine('sqlite:///:memory:', echo=True)
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    d = sample_data()
+    vp = Herb(name=d['Kasvi'])
+    session.add(vp)
