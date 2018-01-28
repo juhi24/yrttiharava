@@ -43,7 +43,7 @@ class YrttiSpider(scrapy.Spider):
         hrefs = set(response.css('a::attr(href)').extract())
         for href in hrefs:
             # /kanta/name/
-            yield response.follow(href, callback=self.parse_yrtti)
+            #yield response.follow(href, callback=self.parse_yrtti) # TODO
             # /kanta/name/tiedot
             yield response.follow(href+'tiedot', callback=self.parse_tiedot)
 
