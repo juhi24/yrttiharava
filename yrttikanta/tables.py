@@ -15,10 +15,13 @@ herb_names = Table('herb_names', Base.metadata,
 
 
 class Herb(Base):
+    """the main herb class"""
     __tablename__ = 'herbs'
-
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
+    # many to one
+    family_id = Column(Integer, ForeignKey('families.id'))
+    family = relationship('Family', back_populates='herbs')
     # many to many
     alt_names = relationship('AltName',
                              secondary=herb_names,
@@ -35,10 +38,21 @@ class Herb(Base):
         return '<Herb {}>'.format(self.name)
 
 
+class Family(Base):
+    """herb family in scientific classification"""
+    __tablename__ = 'families'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    name_fi = Column(String)
+    herbs = relationship('Herb', order_by=Herb.id, back_populates='family')
+
+    def __repr__(self):
+        return '<Family {}>'.format(self.name)
+
+
 class AltName(Base):
     """Alternative herb names"""
     __tablename__ = 'alt_names'
-
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     herbs = relationship('Herb',
@@ -46,7 +60,7 @@ class AltName(Base):
                          back_populates='alt_names')
 
     def __init__(self, name):
-        self.name = name
+        self.name = name.lower()
 
     def __repr__(self):
         return '<AltName {}>'.format(self.name)

@@ -5,7 +5,13 @@ __metaclass__ = type
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from yrttikanta.tables import Herb, Base
+from yrttikanta.tables import Herb, Family, Base
+
+
+def create_herb(data):
+    herb = Herb(name=d['Kasvi'], alt_names=d['Muut nimet'])
+    herb.family = Family(name=d['Heimo'][0], name_fi=d['Heimo'][1])
+    return herb
 
 
 def sample_data():
@@ -45,5 +51,5 @@ if __name__ == '__main__':
     Session = sessionmaker(bind=engine)
     session = Session()
     d = sample_data()
-    vp = Herb(name=d['Kasvi'], alt_names=d['Muut nimet'])
+    vp = create_herb(d)
     session.add(vp)
