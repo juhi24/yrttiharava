@@ -11,9 +11,10 @@ from yrttikanta.tables import Herb, Family, Base
 from j24 import home
 
 
-def create_herb(data):
+def create_herb(session, data):
     herb = Herb(name=data['Kasvi'], alt_names=data['Muut nimet'])
-    herb.family = Family(name=data['Heimo'][0], name_fi=data['Heimo'][1])
+    family_name = data['Heimo'][0]
+    herb.family = Family.get_or_create(session, name=family_name, name_fi=data['Heimo'][1])
     return herb
 
 
@@ -27,44 +28,19 @@ def data_gen_from_pkl(pkl_fpath):
                 break
 
 
-def sample_data():
-    return {'Englanninkieliset nimet': ['Dead nettle'],
-         'Heimo': ['Lamiaceae', 'Huulikukkaiskasvit'],
-         'Kansanperinne': False,
-         'Kasvi': 'Valkopeippi',
-         'Kauppayrtti': False,
-         'Latinankieliset nimet': ['Lamium album'],
-         'Linkkitekstit': [''],
-         'Muut nimet': ['Mukulvainen',
-          'nuplukainen',
-          'peippi',
-          'peippo',
-          'piikkiäinen',
-          'piiskoheinä',
-          'piitiäinen',
-          'pillikka',
-          'pillikäs',
-          'porrinkainen',
-          'porro',
-          'sianleuka',
-          'siannukulainen',
-          'toukoruoho',
-          'valkopeipponen',
-          'valkopillike',
-          'valkopillikäs'],
-         'Ruotsinkieliset nimet': ['Vitplister'],
-         'Saksankieliset nimet': ['Taubnessel'],
-         'Vaikutusalueet rohtona': ['kuukautisvaivat', 'valkovuoto'],
-         'Viljelytekniikka': False}
+def store_all(session, herb_dicts):
+    for d in ygen:
+        herb = create_herb(session, d)
+        session.add(herb)
+    session.commit()
+    
 
 
 if __name__ == '__main__':
     ypkl = path.join(home(), 'koodi/yrttiharava/output/yrtit.pickle')
     ygen = data_gen_from_pkl(ypkl)
-    engine = create_engine('sqlite:///:memory:', echo=True)
+    engine = create_engine('sqlite:///:memory:', echo=False)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    d = sample_data()
-    vp = create_herb(d)
-    session.add(vp)
+    store_all(session, ygen)
