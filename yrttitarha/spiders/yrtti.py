@@ -10,7 +10,7 @@ def ll2dict(ll):
     d = {}
     for l in ll:
         key = l[0]
-        if key.lower() == 'kasvi':
+        if key == 'kasvi':
             d[key] = l[1]
             continue
         try:
@@ -25,8 +25,11 @@ def ll2dict(ll):
 
 def parse_tiedot(s):
     """tiedot string to dict"""
-    l = s.split('\n')
-    ll = [s.split('|') for s in l]
+    l = s.lower().split('\n')
+    ll = []
+    for ss in l:
+        inner_l = ss.split('|')
+        ll.append([sss.strip() for sss in inner_l])
     d = ll2dict(ll)
     return d
 

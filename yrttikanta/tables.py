@@ -45,6 +45,10 @@ class Family(Base):
     name_fi = Column(String)
     herbs = relationship('Herb', order_by=Herb.id, back_populates='family')
 
+    def __init__(self, name, name_fi=None):
+        self.name = name.capitalize()
+        self.name_fi = name_fi
+
     def __repr__(self):
         return '<Family {}>'.format(self.name)
 

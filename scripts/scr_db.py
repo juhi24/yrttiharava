@@ -12,9 +12,10 @@ from j24 import home
 
 
 def create_herb(session, data):
-    herb = Herb(name=data['Kasvi'], alt_names=data['Muut nimet'])
-    family_name = data['Heimo'][0]
-    herb.family = Family.get_or_create(session, name=family_name, name_fi=data['Heimo'][1])
+    herb = Herb(name=data['kasvi'], alt_names=data['muut nimet'])
+    family_name = data['heimo'][0]
+    herb.family = Family.get_or_create(session, name=family_name,
+                                       name_fi=data['heimo'][1])
     return herb
 
 
