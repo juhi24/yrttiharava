@@ -7,15 +7,19 @@ import pickle
 from os import path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from yrttikanta.tables import Herb, Family, Base
+from yrttikanta.tables import Herb, Family, AltName, Base
 from j24 import home
 
 
 def create_herb(session, data):
-    herb = Herb(name=data['kasvi'], alt_names=data['muut nimet'])
+    herb = Herb(name=data['kasvi'])
     family_name = data['heimo'][0]
     herb.family = Family.get_or_create(session, name=family_name,
                                        name_fi=data['heimo'][1])
+    alt_names = set() # prevent duplicates
+    for alt_name in data['muut nimet']:
+        alt_names.add(AltName.get_or_create(session, alt_name))
+    herb.alt_names = list(alt_names)
     return herb
 
 

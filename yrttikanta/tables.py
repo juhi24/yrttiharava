@@ -14,8 +14,14 @@ herb_names = Table('herb_names', Base.metadata,
                    Column('name_id', ForeignKey('alt_names.id'), primary_key=True))
 
 
-class GetMixin():
-    """a mix-in with get-or-create constructor"""
+class NameID():
+    """a mixin providing unique name and id"""
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+
+class GetMixin(NameID):
+    """a mixin with get-or-create constructor"""
 
     @classmethod
     def get_or_create(cls, session, name, **kws):
@@ -37,11 +43,9 @@ class GetMixin():
         return o
 
 
-class Herb(Base):
+class Herb(NameID, Base):
     """the main herb class"""
     __tablename__ = 'herbs'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
     # many to one
     family_id = Column(Integer, ForeignKey('families.id'))
     family = relationship('Family', back_populates='herbs')
@@ -63,8 +67,6 @@ class Herb(Base):
 class Family(GetMixin, Base):
     """herb family in scientific classification"""
     __tablename__ = 'families'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
     name_fi = Column(String)
     herbs = relationship('Herb', order_by=Herb.id, back_populates='family')
 
@@ -79,8 +81,6 @@ class Family(GetMixin, Base):
 class AltName(GetMixin, Base):
     """Alternative herb names"""
     __tablename__ = 'alt_names'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=False) # TODO
     herbs = relationship('Herb',
                          secondary=herb_names,
                          back_populates='alt_names')
