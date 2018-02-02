@@ -14,6 +14,29 @@ herb_names = Table('herb_names', Base.metadata,
                    Column('name_id', ForeignKey('alt_names.id'), primary_key=True))
 
 
+class GetMixin():
+    """a mix-in with get-or-create constructor"""
+
+    @classmethod
+    def get_or_create(cls, session, name, **kws):
+        # get the session cache, creating it if necessary
+        cache = session._unique_cache = getattr(session, '_unique_cache', {})
+        # create a key for memoizing
+        key = (cls, name)
+        # check the cache first
+        o = cache.get(key)
+        if o is None:
+            # check the database if it's not in the cache
+            o = session.query(cls).filter_by(name=name).first()
+            if o is None:
+                # create a new one if it's not in the database
+                o = cls(name=name, **kws)
+                session.add(o)
+            # update the cache
+            cache[key] = o
+        return o
+
+
 class Herb(Base):
     """the main herb class"""
     __tablename__ = 'herbs'
@@ -37,7 +60,7 @@ class Herb(Base):
         return '<Herb {}>'.format(self.name)
 
 
-class Family(Base):
+class Family(GetMixin, Base):
     """herb family in scientific classification"""
     __tablename__ = 'families'
     id = Column(Integer, primary_key=True)
@@ -52,27 +75,8 @@ class Family(Base):
     def __repr__(self):
         return '<Family {}>'.format(self.name)
 
-    @classmethod
-    def get_or_create(cls, session, name, name_fi):
-        # get the session cache, creating it if necessary
-        cache = session._unique_cache = getattr(session, '_unique_cache', {})
-        # create a key for memoizing
-        key = (cls, name)
-        # check the cache first
-        o = cache.get(key)
-        if o is None:
-            # check the database if it's not in the cache
-            o = session.query(cls).filter_by(name=name).first()
-            if o is None:
-                # create a new one if it's not in the database
-                o = cls(name=name, name_fi=name_fi)
-                session.add(o)
-            # update the cache
-            cache[key] = o
-        return o
 
-
-class AltName(Base):
+class AltName(GetMixin, Base):
     """Alternative herb names"""
     __tablename__ = 'alt_names'
     id = Column(Integer, primary_key=True)

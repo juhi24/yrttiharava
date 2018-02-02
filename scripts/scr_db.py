@@ -36,7 +36,6 @@ def store_all(session, herb_dicts):
     session.commit()
     
 
-
 if __name__ == '__main__':
     ypkl = path.join(home(), 'koodi/yrttiharava/output/yrtit.pickle')
     ygen = data_gen_from_pkl(ypkl)
@@ -45,3 +44,4 @@ if __name__ == '__main__':
     Session = sessionmaker(bind=engine)
     session = Session()
     store_all(session, ygen)
+    qfamily = session.query(Family.id, Family.name).order_by(Family.name)
