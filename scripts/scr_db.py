@@ -13,8 +13,7 @@ from j24 import home
 
 def create_herb(session, data):
     herb = Herb(name=data['kasvi'])
-    family_name = data['heimo'][0]
-    herb.family = Family.get_or_create(session, name=family_name,
+    herb.family = Family.get_or_create(session, name=data['heimo'][0],
                                        name_fi=data['heimo'][1])
     alt_names = set() # prevent duplicates
     for alt_name in data['muut nimet']:
