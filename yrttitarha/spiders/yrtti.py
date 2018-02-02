@@ -10,15 +10,20 @@ def ll2dict(ll):
     d = {}
     for l in ll:
         key = l[0]
-        if key == 'kasvi':
+        if key == 'kasvi': # herb name
             d[key] = l[1]
             continue
+        values = l[1:]
         try:
-            if len(l[1:]) > 1:
+            if len(values) != 1:
                 raise ValueError
-            d[key] = bool(int(l[-1]))
+            d[key] = bool(int(values[0]))
         except ValueError:
-            d[key] = l[1:]
+            try:
+                values.remove('')
+            except ValueError:
+                pass # everything is ok
+            d[key] = values
     d.pop('', None) # remove empty key, if exists
     return d
 
