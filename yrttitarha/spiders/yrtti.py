@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 __metaclass__ = type
 
 import scrapy
+import requests
+from bs4 import BeautifulSoup
 
 
 def ll2dict(ll):
@@ -38,6 +40,33 @@ def parse_tiedot(s):
     d = ll2dict(ll)
     return d
 
+def parse_texts(response):
+    soup = BeautifulSoup(response.text, 'lxml')
+    sections = {}
+    for t in ('a', 'b', 'i'):
+        for tag in soup.find_all(t):
+            tag.replace_with_children()
+    for h2 in soup.find_all('h2'):
+        if h2.parent.name == 'p':
+            h2.parent.replace_with_children()
+        p_texts = []
+        for s in h2.next_siblings:
+            if s.name == 'h2':
+                break
+            if hasattr(s, 'descendants'):
+                br = False
+                for d in s.descendants:
+                    if d.name == 'h2':
+                        br = True
+                if br:
+                    break
+            if hasattr(s, 'text'):
+                text = s.text.replace('\n', '')
+                if text and text not in ['Ruokaohjeet']:
+                    p_texts.append(text)
+        sections[h2.text] = p_texts or [h2.next_sibling.replace('\n', '')]
+    return sections
+
 
 class YrttiSpider(scrapy.Spider):
     """for crawling and parsing all herbs in yrttitarha"""
@@ -51,17 +80,11 @@ class YrttiSpider(scrapy.Spider):
         hrefs = set(response.css('a::attr(href)').extract())
         for href in hrefs:
             # /kanta/name/
-            #yield response.follow(href, callback=self.parse_yrtti) # TODO
-            # /kanta/name/tiedot
-            yield response.follow(href+'tiedot', callback=self.parse_tiedot)
-
-    def parse_yrtti(self, response):
-        """parse descriptions"""
-        # TODO: parse descriptions
-        yield {'name': response.css('h1::text').extract_first()}
+            yield response.follow(href, callback=self.parse_tiedot)
 
     def parse_tiedot(self, response):
         """parse_tiedot wrapper"""
-        yield parse_tiedot(response.text)
-
-
+        subresponse = requests.get(response.urljoin('tiedot'))
+        data = parse_tiedot(subresponse.text)
+        data['sections'] = parse_texts(response)
+        yield data
