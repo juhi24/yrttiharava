@@ -40,6 +40,7 @@ def parse_tiedot(s):
     d = ll2dict(ll)
     return d
 
+
 def parse_texts(response):
     soup = BeautifulSoup(response.text, 'lxml')
     sections = {}
@@ -65,6 +66,37 @@ def parse_texts(response):
                 if text and text not in ['Ruokaohjeet']:
                     p_texts.append(text)
         sections[h2.text] = p_texts or [h2.next_sibling.replace('\n', '')]
+    return sections
+
+
+def parse_texts2(response):
+    soup = BeautifulSoup(response.text, 'lxml')
+    sections = {}
+    for t in ('a',):# 'b', 'i'):
+        for tag in soup.find_all(t):
+            tag.replace_with_children()
+    for h2 in soup.find_all('h2'):
+        if h2.parent.name == 'p':
+            h2.parent.replace_with_children()
+    for h2 in soup.find_all('h2'):
+        texts = []
+        for s in h2.next_siblings:
+            if s.name == 'h2':
+                break
+            if hasattr(s, 'text'):
+                if s.text in ('', '\n'):
+                    continue
+                con = False
+                for extra in ['Kansanperinne', 'Viljelyohjeet', 'Kauppayrtti',
+                              'Ruokaohjeet', 'Ravintoainesisältö']:
+                    if extra in s.descendants:
+                        con = True
+                if con:
+                    continue
+            elif str(s) in ('', '\n'):
+                continue
+            texts.append(str(s).replace('\n', ''))
+        sections[h2.text] = ''.join(texts) or h2.next_sibling.replace('\n', '')
     return sections
 
 
