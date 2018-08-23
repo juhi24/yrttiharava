@@ -70,6 +70,7 @@ def parse_texts(response):
 
 
 def parse_texts2(response):
+    """parse to {header: string, ...} pairs keeping most tags"""
     soup = BeautifulSoup(response.text, 'lxml')
     sections = {}
     for t in ('a',):# 'b', 'i'):
@@ -93,7 +94,7 @@ def parse_texts2(response):
                         con = True
                 if con:
                     continue
-            elif str(s) in ('', '\n'):
+            elif s.strip()=='':
                 continue
             texts.append(str(s).replace('\n', ''))
         sections[h2.text] = ''.join(texts) or h2.next_sibling.replace('\n', '')
@@ -118,5 +119,5 @@ class YrttiSpider(scrapy.Spider):
         """parse_tiedot wrapper"""
         subresponse = requests.get(response.urljoin('tiedot'))
         data = parse_tiedot(subresponse.text)
-        data['sections'] = parse_texts(response)
+        data['sections'] = parse_texts2(response)
         yield data
